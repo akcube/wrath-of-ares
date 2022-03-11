@@ -13,6 +13,3 @@ os.system('cls' if os.name == 'nt' else 'clear')
 # Run game
 Game = WrathOfAres()
 Game.play()
-
-
-
