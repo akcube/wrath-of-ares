@@ -12,5 +12,5 @@ ASCII_HUTS = r"""
 """
 
 ASCII_KING = r"""
-♔
+K
 """

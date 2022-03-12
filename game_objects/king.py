@@ -15,8 +15,26 @@ class King(GameObject):
     '''
 
     def __init__(self):
-        super().__init__(dim=np.array([1, 1]), pos=np.array([1, 1]), velocity=1.0, 
-                         drawing=get_graphic(ASCII_KING), color=np.full((1, 1), Fore.BLACK), mhealth=100)
+        super().__init__(dim=np.array([1, 1]), pos=np.array([5, 5]), velocity=1.0, 
+                         drawing=get_graphic(ASCII_KING), color=np.full((1, 1), Fore.RED), mhealth=100)
+        self.direction = 'L'
+    
+    def move(self, key, screen):
+        maxh, maxw = screen.getDim()
+        if key == 'w':
+            self._pos[1] = max(self._pos[1] - self._velocity, 0)
+        elif key == 'a':
+            self._pos[0] = max(self._pos[0] - self._velocity, 0)
+        elif key == 's':
+            self._pos[1] = min(self._pos[1] + self._velocity, maxh)
+        elif key == 'd':
+            self._pos[0] = min(self._pos[0] + self._velocity, maxw)
+
+    def getDir(self):
+        return self.direction
+
+    def setDir(self, dir):
+        self.direction = dir
     
     def setColor(self, col):
         self._color = np.full(tuple(self.dim), col)
