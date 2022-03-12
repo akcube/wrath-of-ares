@@ -18,8 +18,8 @@ class WrathOfAres:
     def __init__(self):
         self.input = KBHit()
         self.screen = Screen()
-        self.player = King()
         self.village = Village('maps/map1.txt')
+        self.player = King(self.village)
         self.objects = [self.player, self.village]
 
     def process_input(self, key):
@@ -29,7 +29,9 @@ class WrathOfAres:
         if(key == 'x'):
             sys.exit(0)
         elif key in movement_keys:
-            self.player.move(key, self.screen)
+            self.player.move(key)
+        elif key == ' ':
+            self.player.sword_attack()
 
     def play(self):
         '''Begins the game.'''

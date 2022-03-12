@@ -35,8 +35,12 @@ class GameObject:
         self._destroyed = False
         self._dyncolor = dyncolor
 
+    def damage(self, dmg):
+        '''Take dmg amount of damage'''
+        self._health -= dmg
+
     def update(self):
-        if(self._health < 0):
+        if(self._health <= 0):
             self._destroyed = True
     
     def render(self, screen):

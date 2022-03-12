@@ -28,19 +28,6 @@ class Screen:
         self.framebuf = np.full((self.height, self.width), "+")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
 
-    def setBackground(self, color):
-        self.background = color
-
-    def getFrametime(self):
-        return self.frametime
-
-    def getDim(self):
-        return self.height, self.width
-
-    def resetCursor(self):
-        '''Resets cursor to (0, 0)'''
-        print("\033[0;0H")
-
     def clip(self, x, y, h, w, obj):
         '''Clips object buffer and color buffer by screen dim'''
         buf, col = obj.getRender()
@@ -72,5 +59,16 @@ class Screen:
             fstr += '\n'
         print(fstr, end='\n')
 
+    def setBackground(self, color):
+        self.background = color
 
+    def getFrametime(self):
+        return self.frametime
+
+    def getDim(self):
+        return self.height, self.width
+
+    def resetCursor(self):
+        '''Resets cursor to (0, 0)'''
+        print("\033[0;0H")
     

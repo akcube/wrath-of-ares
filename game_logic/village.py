@@ -14,13 +14,16 @@ class Village:
     containerizes all the objects in the village and state (defeated / undefeated)
     '''
 
-    def fill_hitbox(self, obj):
+    def fill_hitbox(self, obj, clear=False):
         h, w = obj.getDim()
-        si, sj = obj.getPos()
+        sj, si = obj.getPos()
         for i in range(si, si+h):
             for j in range(sj, sj+w):
                 if i >= 0 and i < config.REQ_HEIGHT and j >= 0 and j < config.REQ_WIDTH:
-                    self.hitbox[i][j] = obj
+                    if not clear:
+                        self.hitbox[i][j] = obj
+                    else:
+                        self.hitbox[i][j] = None
 
     def __init__(self, file):
         charmap = np.loadtxt(file, dtype='str', comments=None)
@@ -33,6 +36,7 @@ class Village:
         
         self.renderlist = []
         self.hitbox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
+        self.defeated = False
         
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
@@ -48,10 +52,22 @@ class Village:
                     T = TownHall([j, i])
                     self.renderlist.append(T)
                     self.fill_hitbox(T)
+        
+    def isClear(self, i, j):
+        i = int(i)
+        j = int(j)
+        return (self.hitbox[i][j] == None)
     
     def render(self, screen):
         for obj in self.renderlist:
             obj.render(screen)
     
     def update(self):
-        pass
+        mdefeated = True
+        for obj in self.renderlist:
+            obj.update()
+            if obj.getDestroyed():
+                self.fill_hitbox(obj, clear=True)
+            else:
+                mdefeated = False
+        self.defeated = mdefeated
