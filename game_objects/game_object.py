@@ -11,8 +11,8 @@ class GameObject:
     inherit from this class.
     """
 
-    def __init__(self, dim=np.array([0, 0]), pos=np.array([0., 0.]), velocity=0.,
-                 drawing=np.array([[" "]]), color=np.array([[" "]]), mhealth=0):
+    def __init__(self, pos=np.array([0., 0.]), velocity=0., drawing=np.array([[" "]]), 
+                 color=np.array([[" "]]), mhealth=0, dyncolor=False):
         """
         Constructor
 
@@ -25,7 +25,7 @@ class GameObject:
             mhealth (int)           : The maximum health this object can have
         """
 
-        self._dim = dim
+        self._dim = np.array(np.shape(drawing))
         self._pos = pos
         self._velocity = velocity
         self._drawing = drawing
@@ -33,9 +33,15 @@ class GameObject:
         self._mhealth = mhealth
         self._health = mhealth
         self._destroyed = False
+        self._dyncolor = dyncolor
+
+    def update(self):
+        if(self._health < 0):
+            self._destroyed = True
     
     def render(self, screen):
-        screen.add(self)
+        if not self._destroyed:
+            screen.add(self)
 
     def setDestroyed(self):
         self._destroyed = True

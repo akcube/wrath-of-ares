@@ -17,15 +17,15 @@ class Screen:
     """
 
     def __init__(self):
-        self.width, self.height = os.get_terminal_size()
+        self.width, self.height = config.REQ_WIDTH, config.REQ_HEIGHT
         self.frametime = config.FRAME_TIME
         self.background = config.BG_COLOR
-        self.framebuf = np.full((self.height, self.width), " ")
+        self.framebuf = np.full((self.height, self.width), "+")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
     
     def clear(self):
         '''Clear framebuffer'''
-        self.framebuf = np.full((self.height, self.width), " ")
+        self.framebuf = np.full((self.height, self.width), "+")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
 
     def setBackground(self, color):
@@ -70,7 +70,7 @@ class Screen:
             for j in range(self.width):
                 fstr += "".join(self.framecolor[i][j]) + "".join(self.background) + self.framebuf[i][j];
             fstr += '\n'
-        print(fstr, end='')
+        print(fstr, end='\n')
 
 
     

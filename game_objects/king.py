@@ -5,6 +5,7 @@ This file contains all the code for the King / Player.
 from game_objects.game_object import GameObject
 from colorama import Fore
 from utils.tools import get_graphic
+import utils.config as config
 from game_objects.graphics import ASCII_KING
 import numpy as np
 
@@ -15,20 +16,25 @@ class King(GameObject):
     '''
 
     def __init__(self):
-        super().__init__(dim=np.array([1, 1]), pos=np.array([5, 5]), velocity=1.0, 
-                         drawing=get_graphic(ASCII_KING), color=np.full((1, 1), Fore.RED), mhealth=100)
+        super().__init__(pos=np.array([1, 1]), velocity=1.0, drawing=get_graphic(ASCII_KING), 
+                         color=np.full((1, 1), config.KING_COLOR), mhealth=100)
         self.direction = 'L'
+        self.atk = 10
     
     def move(self, key, screen):
         maxh, maxw = screen.getDim()
         if key == 'w':
             self._pos[1] = max(self._pos[1] - self._velocity, 0)
+            self.direction = 'U'
         elif key == 'a':
             self._pos[0] = max(self._pos[0] - self._velocity, 0)
+            self.direction = 'L'
         elif key == 's':
             self._pos[1] = min(self._pos[1] + self._velocity, maxh)
+            self.direction = 'D'
         elif key == 'd':
             self._pos[0] = min(self._pos[0] + self._velocity, maxw)
+            self.direction = 'R'
 
     def getDir(self):
         return self.direction

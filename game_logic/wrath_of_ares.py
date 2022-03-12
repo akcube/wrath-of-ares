@@ -1,3 +1,6 @@
+from game_logic.village import Village
+from game_objects.hut import Hut
+from game_objects.wall import Wall
 from utils.kbhit import KBHit, getkey
 from utils.screen import Screen
 from time import monotonic as uptime
@@ -16,7 +19,8 @@ class WrathOfAres:
         self.input = KBHit()
         self.screen = Screen()
         self.player = King()
-        self.objects = [self.player]
+        self.village = Village('maps/map1.txt')
+        self.objects = [self.player, self.village]
 
     def process_input(self, key):
         if key == None:
@@ -38,6 +42,7 @@ class WrathOfAres:
 
             self.screen.clear()
             for obj in self.objects:
+                obj.update()
                 obj.render(self.screen)
             self.screen.update()
 
