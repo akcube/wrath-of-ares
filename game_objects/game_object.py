@@ -3,6 +3,8 @@ This file contains an interface with all the data and implementing all the
 functions expected from a basic game object model.
 """
 
+import numpy as np
+
 class GameObject:
     """
     This class acts as an interface for game objects. All game objects should 
@@ -31,6 +33,9 @@ class GameObject:
         self._mhealth = mhealth
         self._health = mhealth
         self._destroyed = False
+    
+    def render(self, screen):
+        screen.add(self)
 
     def setDestroyed(self):
         self._destroyed = True
