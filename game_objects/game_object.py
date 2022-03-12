@@ -3,6 +3,7 @@ This file contains an interface with all the data and implementing all the
 functions expected from a basic game object model.
 """
 
+import utils.config as config
 import numpy as np
 
 class GameObject:
@@ -40,6 +41,14 @@ class GameObject:
         self._health -= dmg
 
     def update(self):
+        if(self._dyncolor):
+            hratio = self._health/self._mhealth
+            if hratio >= config.UNTOUCHED_MINBOUND:
+                self._color = np.full(tuple(self.getDim()), config.UNTOUCHED_COLOR)
+            elif hratio >= config.MODERATE_DMG_MINBOUND:
+                self._color = np.full(tuple(self.getDim()), config.MODERATE_DMG_COLOR)
+            else:
+                self._color = np.full(tuple(self.getDim()), config.CRITICAL_DMG_COLOR)
         if(self._health <= 0):
             self._destroyed = True
     
