@@ -32,6 +32,8 @@ class WrathOfAres:
             self.player.move(key)
         elif key == ' ':
             self.player.sword_attack()
+        elif key == 'q':
+            self.player.aoe_attack()
 
     def play(self):
         '''Begins the game.'''

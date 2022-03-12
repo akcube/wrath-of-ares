@@ -21,6 +21,8 @@ class King(GameObject):
                          color=np.full((1, 1), config.KING_COLOR), mhealth=100)
         self.direction = 'L'
         self.atk = 5
+        self.aoe_radius = 5
+        self.aoe_dmg = 8
         self.village = village
     
     def getNext(self, dir):
@@ -59,6 +61,19 @@ class King(GameObject):
         nxti, nxtj = self.getNext(self.direction)
         if not self.village.isClear(nxti, nxtj): # There is a block to attack
             self.village.hitbox[nxti][nxtj].damage(self.atk)
+    
+    def aoe_attack(self):
+        j, i = self.getPos()
+        in_range = []
+        for ii in range(i-5, i+6):
+            for jj in range(j-5, j+6):
+                if ii < 0 or jj < 0 or ii >= config.REQ_HEIGHT or jj >= config.REQ_WIDTH:
+                    continue
+                if abs(ii - i) + abs(jj - j) <= self.aoe_radius and not self.village.isClear(ii, jj):
+                    in_range.append(self.village.hitbox[ii][jj])
+        in_range = list(set(in_range))
+        for building in in_range:
+            building.damage(self.aoe_dmg)
 
 
     def getDir(self):
