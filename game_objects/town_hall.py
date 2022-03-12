@@ -14,5 +14,5 @@ class TownHall(GameObject):
 
     def __init__(self, _pos):
         super().__init__(pos=_pos, velocity=0, drawing=get_graphic(ASCII_TOWNHALL),
-                         color=np.full((1, 1), config.WALL_COLOR), mhealth=100, dyncolor=True)
+                         color=config.WALL_COLOR, mhealth=100, dyncolor=True)
     

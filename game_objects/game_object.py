@@ -13,7 +13,7 @@ class GameObject:
     """
 
     def __init__(self, pos=np.array([0., 0.]), velocity=0., drawing=np.array([[" "]]), 
-                 color=np.array([[" "]]), mhealth=0, dyncolor=False):
+                 color=" ", mhealth=0, dyncolor=False):
         """
         Constructor
 
@@ -30,7 +30,7 @@ class GameObject:
         self._pos = pos
         self._velocity = velocity
         self._drawing = drawing
-        self._color = color
+        self._color = np.full(drawing.shape, color)
         self._mhealth = mhealth
         self._health = mhealth
         self._destroyed = False

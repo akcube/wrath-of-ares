@@ -25,3 +25,7 @@ K
 ASCII_WALL = r"""
 #
 """
+
+ASCII_CANNON = r"""
+Y
+"""

@@ -18,7 +18,7 @@ class King(GameObject):
 
     def __init__(self, village):
         super().__init__(pos=np.array([1, 1]), velocity=1.0, drawing=get_graphic(ASCII_KING), 
-                         color=np.full((1, 1), config.KING_COLOR), mhealth=100)
+                         color=config.KING_COLOR, mhealth=100)
         self.direction = 'L'
         self.atk = 5
         self.aoe_radius = 5
@@ -63,6 +63,9 @@ class King(GameObject):
             self.village.hitbox[nxti][nxtj].damage(self.atk)
     
     def aoe_attack(self):
+        '''
+        Makes a simple AoE to all the blocks within aoe radius
+        '''
         j, i = self.getPos()
         in_range = []
         for ii in range(i-5, i+6):
