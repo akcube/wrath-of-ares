@@ -30,25 +30,35 @@ class GameObject:
         self._pos = pos
         self._velocity = velocity
         self._drawing = drawing
+        self._origcolor = color
         self._color = np.full(drawing.shape, color)
         self._mhealth = mhealth
         self._health = mhealth
         self._destroyed = False
         self._dyncolor = dyncolor
+        self._renderDmgTick = False
 
     def damage(self, dmg):
         '''Take dmg amount of damage'''
         self._health -= dmg
+        self._renderDmgTick = True
 
     def update(self):
         if(self._dyncolor):
             hratio = self._health/self._mhealth
             if hratio >= config.UNTOUCHED_MINBOUND:
-                self._color = np.full(tuple(self.getDim()), config.UNTOUCHED_COLOR)
+                self._color = np.full(tuple(self.getDim()), self._origcolor)
             elif hratio >= config.MODERATE_DMG_MINBOUND:
                 self._color = np.full(tuple(self.getDim()), config.MODERATE_DMG_COLOR)
             else:
                 self._color = np.full(tuple(self.getDim()), config.CRITICAL_DMG_COLOR)
+        else:
+            self._color = np.full(tuple(self.getDim()), self._origcolor)
+        
+        if self._renderDmgTick:
+            self._renderDmgTick = False
+            self._color = np.full(tuple(self.getDim()), config.DAMAGE_TICK_COLOR)
+
         if(self._health <= 0):
             self._destroyed = True
     

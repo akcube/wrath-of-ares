@@ -1,4 +1,5 @@
 from game_logic.village import Village
+from game_objects.barbarian import Barbarian
 from game_objects.hut import Hut
 from game_objects.wall import Wall
 from utils.kbhit import KBHit, getkey
@@ -21,19 +22,25 @@ class WrathOfAres:
         self.village = Village('maps/map1.txt')
         self.player = King(self.village)
         self.objects = [self.player, self.village]
+        self.village.setObjList(self.objects)
+        self.spawnpoints = self.village.getSpawnpoints()
 
     def process_input(self, key):
         if key == None:
             return
-        movement_keys = ['w', 'a', 's', 'd']
         if(key == 'x'):
             sys.exit(0)
-        elif key in movement_keys:
+        elif key in ['w', 'a', 's', 'd']:
             self.player.move(key)
         elif key == ' ':
             self.player.sword_attack()
         elif key == 'q':
             self.player.aoe_attack()
+        elif key in ['1', '2', '3']:
+            s_id = int(key) - 1
+            newb = Barbarian(self.spawnpoints[s_id], self.village)
+            self.objects.append(newb)
+            self.village.setObjList(self.objects)
 
     def play(self):
         '''Begins the game.'''

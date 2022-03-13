@@ -22,6 +22,10 @@ ASCII_KING = r"""
 K
 """
 
+ASCII_BARBARIAN = r"""
+B
+"""
+
 ASCII_WALL = r"""
 #
 """

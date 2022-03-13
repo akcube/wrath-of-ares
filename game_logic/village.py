@@ -2,6 +2,8 @@
 This file contains all the code related to creating a village from a map
 """
 
+from distutils.spawn import spawn
+from game_objects.cannon import Cannon
 from game_objects.hut import Hut
 from game_objects.town_hall import TownHall
 from game_objects.wall import Wall
@@ -37,6 +39,7 @@ class Village:
         self.renderlist = []
         self.hitbox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.defeated = False
+        self.spawnpoints = []
         
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
@@ -52,7 +55,21 @@ class Village:
                     T = TownHall([j, i])
                     self.renderlist.append(T)
                     self.fill_hitbox(T)
+                elif charmap[i][j] == 'C':
+                    C = Cannon([j,i], [])
+                    self.renderlist.append(C)
+                    self.fill_hitbox(C)
+                elif charmap[i][j] == '1' or charmap[i][j] == '2' or charmap[i][j] == '3':
+                    self.spawnpoints.append([j, i])
         
+    def setObjList(self, objList):
+        for obj in self.renderlist:
+            if isinstance(obj, Cannon):
+                obj.setObjList(objList)
+    
+    def getSpawnpoints(self):
+        return self.spawnpoints
+
     def isClear(self, i, j):
         i = int(i)
         j = int(j)
