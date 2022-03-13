@@ -17,10 +17,11 @@ class Screen:
     frame rate, framebuffer, etc.
     """
 
-    def __init__(self):
+    def __init__(self, player):
         self.width, self.height = config.REQ_WIDTH, config.REQ_HEIGHT
         self.frametime = config.FRAME_TIME
         self.background = config.BG_COLOR
+        self.player = player
         self.framebuf = np.full((self.height, self.width), "+")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
         self.recorder = Recorder()
@@ -56,6 +57,15 @@ class Screen:
         '''Prints the screen contents to terminal'''
         print("\033[0;0H", end='')
         fstr = ""
+        White = colorama.Fore.WHITE
+        Red = colorama.Fore.RED
+        status = colorama.Style.RESET_ALL
+        status += White + "Player health: " + Red + str(self.player._health) + " / " + str(self.player._mhealth)
+        while len(status) <= config.REQ_WIDTH:
+            status += " "
+        status += '\n'
+        fstr += status
+
         for i in range(self.height):
             for j in range(self.width):
                 fstr += "".join(self.framecolor[i][j]) + "".join(self.background) + self.framebuf[i][j];

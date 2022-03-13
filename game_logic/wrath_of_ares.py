@@ -18,11 +18,11 @@ class WrathOfAres:
 
     def __init__(self):
         self.input = KBHit()
-        self.screen = Screen()
         self.village = Village('maps/map1.txt')
         self.player = King(self.village)
         self.objects = [self.player, self.village]
         self.village.addEnemy(self.player)
+        self.screen = Screen(self.player)
 
     def process_input(self, key):
         if key == None:
