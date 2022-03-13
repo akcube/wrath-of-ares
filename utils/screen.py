@@ -29,7 +29,7 @@ class Screen:
     
     def clear(self):
         '''Clear framebuffer'''
-        self.framebuf = np.full((self.height, self.width), "+")
+        self.framebuf = np.full((self.height, self.width), " ")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
 
     def clip(self, x, y, h, w, obj):

@@ -41,6 +41,7 @@ class GameObject:
     def damage(self, dmg):
         '''Take dmg amount of damage'''
         self._health -= dmg
+        self._health = max(self._health, 0);
         self._renderDmgTick = True
 
     def update(self):

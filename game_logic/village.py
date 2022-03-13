@@ -95,6 +95,9 @@ class Village:
             obj.update()
             if obj.getDestroyed():
                 self.fill_hitbox(obj, clear=True)
-            else:
+            elif not isinstance(obj, Barbarian) and not isinstance(obj, Spawnpoint):
                 mdefeated = False
         self.defeated = mdefeated
+
+    def isDefeated(self):
+        return self.defeated

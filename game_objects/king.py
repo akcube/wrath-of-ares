@@ -90,3 +90,6 @@ class King(GameObject):
 
     def setVelocity(self, vel):
         self._velocity = vel
+
+    def isDead(self):
+        return self._health <= 0
