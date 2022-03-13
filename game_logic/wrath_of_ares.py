@@ -22,8 +22,7 @@ class WrathOfAres:
         self.village = Village('maps/map1.txt')
         self.player = King(self.village)
         self.objects = [self.player, self.village]
-        self.village.setObjList(self.objects)
-        self.spawnpoints = self.village.getSpawnpoints()
+        self.village.addEnemy(self.player)
 
     def process_input(self, key):
         if key == None:
@@ -37,14 +36,10 @@ class WrathOfAres:
         elif key == 'q':
             self.player.aoe_attack()
         elif key in ['1', '2', '3']:
-            s_id = int(key) - 1
-            newb = Barbarian(self.spawnpoints[s_id], self.village)
-            self.objects.append(newb)
-            self.village.setObjList(self.objects)
+            self.village.spawnBarbarian(key)
 
     def play(self):
         '''Begins the game.'''
-
         while True:
             frame_begin = uptime()
 

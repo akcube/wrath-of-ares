@@ -2,9 +2,12 @@
 This file contains all the code related to creating a village from a map
 """
 
+import atexit
 from distutils.spawn import spawn
+from game_objects.barbarian import Barbarian
 from game_objects.cannon import Cannon
 from game_objects.hut import Hut
+from game_objects.spawnpoint import Spawnpoint
 from game_objects.town_hall import TownHall
 from game_objects.wall import Wall
 import utils.config as config
@@ -40,6 +43,7 @@ class Village:
         self.hitbox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.defeated = False
         self.spawnpoints = []
+        self.enemies = []
         
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
@@ -60,15 +64,15 @@ class Village:
                     self.renderlist.append(C)
                     self.fill_hitbox(C)
                 elif charmap[i][j] == '1' or charmap[i][j] == '2' or charmap[i][j] == '3':
+                    S = Spawnpoint([j,i], charmap[i][j])
+                    self.renderlist.append(S)
                     self.spawnpoints.append([j, i])
         
-    def setObjList(self, objList):
-        for obj in self.renderlist:
-            if isinstance(obj, Cannon):
-                obj.setObjList(objList)
-    
-    def getSpawnpoints(self):
-        return self.spawnpoints
+    def spawnBarbarian(self, key):
+        sid = int(key) - 1
+        B = Barbarian(self.spawnpoints[sid], self)
+        self.renderlist.append(B)
+        self.enemies.append(B)
 
     def isClear(self, i, j):
         i = int(i)
@@ -79,9 +83,15 @@ class Village:
         for obj in self.renderlist:
             obj.render(screen)
     
+    def addEnemy(self, enemy):
+        self.enemies.append(enemy)
+    
     def update(self):
         mdefeated = True
+        self.enemies = [e for e in self.enemies if not e.getDestroyed()]
         for obj in self.renderlist:
+            if isinstance(obj, Cannon):
+                obj.setTargets(self.enemies)
             obj.update()
             if obj.getDestroyed():
                 self.fill_hitbox(obj, clear=True)

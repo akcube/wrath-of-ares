@@ -32,12 +32,18 @@ class Cannon(GameObject):
     
     def update(self):
         self.cur_tick = (self.cur_tick+1)%self.frame_delay
+        closest = None
+        closestDist = 10000000
         if self.cur_tick == 0 and not self._destroyed:
-            sorted(self.targets, key=lambda x : self.manhattan(x))
-            if self.targets and self.manhattan(self.targets[0]) <= self.range:
-                self.targets[0].damage(self.atk)          
+            for t in self.targets:
+                if self.manhattan(t) < closestDist:
+                    closest = t
+                    closestDist = self.manhattan(t)
+        if closest is not None and closestDist <= self.range:
+            closest.damage(self.atk)
+        
         return super().update()
     
-    def setObjList(self, objList):
-        self.objlist = objList
+    def setTargets(self, _targets):
+        self.targets = _targets
     
