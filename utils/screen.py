@@ -2,6 +2,7 @@ import os
 import colorama
 import utils.config as config
 import numpy as np
+from utils.recorder import Recorder
 from utils.tools import clear_terminal
 
 """
@@ -22,6 +23,8 @@ class Screen:
         self.background = config.BG_COLOR
         self.framebuf = np.full((self.height, self.width), "+")
         self.framecolor = np.full((self.height, self.width), colorama.Fore.GREEN, dtype='object')
+        self.recorder = Recorder()
+        self.recorder.start_recording()
     
     def clear(self):
         '''Clear framebuffer'''
@@ -57,6 +60,7 @@ class Screen:
             for j in range(self.width):
                 fstr += "".join(self.framecolor[i][j]) + "".join(self.background) + self.framebuf[i][j];
             fstr += '\n'
+        self.recorder.record(fstr)
         print(fstr, end='\n')
 
     def setBackground(self, color):
