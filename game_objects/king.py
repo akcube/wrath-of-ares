@@ -9,6 +9,7 @@ from utils.tools import get_graphic
 import utils.config as config
 from game_objects.graphics import ASCII_KING
 import numpy as np
+from time import monotonic as uptime
 
 class King(GameObject):
     '''
@@ -17,13 +18,14 @@ class King(GameObject):
     '''
 
     def __init__(self, village):
-        super().__init__(pos=np.array([1, 1]), velocity=1.0, drawing=get_graphic(ASCII_KING), 
+        super().__init__(pos=np.array([1, 1]), velocity=config.KING_SPEED, drawing=get_graphic(ASCII_KING), 
                          color=config.KING_COLOR, mhealth=100)
         self.direction = 'L'
         self.atk = 5
         self.aoe_radius = 5
         self.aoe_dmg = 8
         self.village = village
+        self.last_moved = uptime()
     
     def getNext(self, dir):
         '''
@@ -34,13 +36,13 @@ class King(GameObject):
         maxh, maxw = config.REQ_HEIGHT, config.REQ_WIDTH
         ni, nj = 0, 0 
         if dir == 'U':
-            ni, nj = max(i - self._velocity, 0), j
+            ni, nj = max(i - 1, 0), j
         elif dir == 'L':
-            ni, nj = i, max(j - self._velocity, 0)
+            ni, nj = i, max(j - 1, 0)
         elif dir == 'D':
-            ni, nj = min(i + self._velocity, maxh), j
+            ni, nj = min(i + 1, maxh), j
         elif dir == 'R':
-            ni, nj = i, min(j + self._velocity, maxw)
+            ni, nj = i, min(j + 1, maxw)
         return int(ni), int(nj)
 
     def move(self, key):
@@ -48,10 +50,13 @@ class King(GameObject):
         Given a directional key press, moves the king in the right direction if
         it is possible to move to that square and sets direction
         '''
+        if(uptime() - self.last_moved < 0.5 / self._velocity):
+            return
         mdict = {'w' : 'U', 'a' : 'L', 's' : 'D', 'd' : 'R'}
         nxti, nxtj = self.getNext(mdict[key])
         self.direction = mdict[key]
         if self.village.isClear(nxti, nxtj):
+            self.last_moved = uptime()
             self._pos = [nxtj, nxti]
 
     def sword_attack(self):

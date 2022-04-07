@@ -27,7 +27,7 @@ class Village:
                 if i >= 0 and i < config.REQ_HEIGHT and j >= 0 and j < config.REQ_WIDTH:
                     if not clear:
                         self.hitbox[i][j] = obj
-                    else:
+                    elif clear and self.hitbox[i][j] == obj:
                         self.hitbox[i][j] = None
 
     def __init__(self, file):

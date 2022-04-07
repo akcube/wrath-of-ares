@@ -4,6 +4,7 @@ from game_objects.game_object import GameObject
 import numpy as np
 import utils.config as config
 from utils.tools import get_graphic
+from time import monotonic as uptime
 from game_objects.graphics import ASCII_BARBARIAN
 
 class Barbarian(GameObject):
@@ -13,12 +14,13 @@ class Barbarian(GameObject):
     '''
 
     def __init__(self, _pos, village):
-        super().__init__(pos=_pos, velocity=1, drawing=get_graphic(ASCII_BARBARIAN),
+        super().__init__(pos=_pos, velocity=config.TROOP_SPEED, drawing=get_graphic(ASCII_BARBARIAN),
                          color=config.BARBARIAN_COLOR, mhealth=10, dyncolor=True)
         self._village = village
         self._framedelay = config.BARBARIAN_FDELAY
         self._curframe = 0
         self.atk = 3
+        self._lastmoved = uptime()
     
     def self_manhattan(self, obj):
         j, i = self.getPos()
@@ -53,6 +55,8 @@ class Barbarian(GameObject):
 
             bestPos = self.getPos()
             if bestObj != None:
+                if(uptime() - self._lastmoved < 0.5 / self._velocity):
+                    return super().update()
                 minDist = 10000000
                 for k in range(len(dx)):
                     nj, ni = self.getPos()
@@ -66,4 +70,5 @@ class Barbarian(GameObject):
                 if(self.self_manhattanp(bestPos) <= 2 and self._curframe == 0):
                     bestObj.damage(self.atk)
                 self.setPos(bestPos)
+                self._lastmoved = uptime()
         return super().update()    

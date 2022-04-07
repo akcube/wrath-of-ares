@@ -41,7 +41,6 @@ class Cannon(GameObject):
                     closestDist = self.manhattan(t)
         if closest is not None and closestDist <= self.range:
             closest.damage(self.atk)
-        
         return super().update()
     
     def setTargets(self, _targets):
