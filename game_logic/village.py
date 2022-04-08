@@ -13,6 +13,9 @@ from game_objects.hut import Hut
 from game_objects.spawnpoint import Spawnpoint
 from game_objects.town_hall import TownHall
 from game_objects.wall import Wall
+from game_objects.village_defense import VillageDefense
+from game_objects.wizard_tower import WizardTower
+from utils.tools import manhattan, pmanhattan
 import utils.config as config
 import numpy as np
 import sys
@@ -65,9 +68,13 @@ class Village:
                     self.renderlist.append(T)
                     self.fill_hitbox(T)
                 elif charmap[i][j] == 'C':
-                    C = Cannon([j,i], [])
+                    C = Cannon([j,i], self)
                     self.renderlist.append(C)
                     self.fill_hitbox(C)
+                elif charmap[i][j] == 'W':
+                    W = WizardTower([j, i], self)
+                    self.renderlist.append(W)
+                    self.fill_hitbox(W)
                 elif charmap[i][j] == '1' or charmap[i][j] == '2' or charmap[i][j] == '3':
                     S = Spawnpoint([j,i], charmap[i][j])
                     self.renderlist.append(S)
@@ -81,7 +88,8 @@ class Village:
         elif sid in [3, 4, 5]:
             E = Archer(self.spawnpoints[sid%3], self)
         elif sid in [6, 7, 8]:
-            E = Balloon(self.spawnpoints[sid%3], self)            
+            E = Balloon(self.spawnpoints[sid%3], self)
+        self.fill_hitbox(E)
         self.renderlist.append(E)
         self.enemies.append(E)
 
@@ -101,16 +109,37 @@ class Village:
         mdefeated = True
         self.bfs()
         self.bfs(primary=False)
-        # self.lock_cannons()
+        self.aimlock()
         for obj in self.renderlist:
-            if isinstance(obj, Cannon):
-                obj.setTargets(self.enemies)
             obj.update()
             if obj.getDestroyed():
                 self.fill_hitbox(obj, clear=True)
             elif not isinstance(obj, Troop) and not isinstance(obj, Spawnpoint):
                 mdefeated = False
         self.defeated = mdefeated
+
+    def aimlock(self):
+        for obj in self.renderlist:
+            if isinstance(obj, VillageDefense):
+                obj.setTarget(None)
+        for pi in range(config.REQ_HEIGHT):
+            for pj in range(config.REQ_WIDTH):
+                obj = self.hitbox[pi][pj]
+                if isinstance(obj, VillageDefense):
+                    r = obj.getRange()
+                    best_dis, target = 100000000, None
+                    consider_extra = tuple(self.enemies[0].getPos())
+                    for i in range(max(0, pi-r), min(config.REQ_HEIGHT, pi+r+1)):
+                        for j in range(max(0, pj-r), min(config.REQ_WIDTH, pj+r+1)):
+                            if self.isClear(i, j) and (j, i) != consider_extra:
+                                continue
+                            enemy = self.hitbox[i][j] if not self.isClear(i, j) else self.enemies[0]
+                            mdis = pmanhattan((pj, pi), obj.getPos())
+                            if mdis < best_dis and obj.canAttack(enemy) and mdis <= obj.range:
+                                best_dis = mdis
+                                target = enemy
+                    if target != None:
+                        obj.setTarget(target)
 
     def bfs(self, primary=True):
         vis = [[False for i in range(config.REQ_WIDTH)] for j in range(config.REQ_HEIGHT)]

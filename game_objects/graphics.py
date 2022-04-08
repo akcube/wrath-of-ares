@@ -18,6 +18,14 @@ ASCII_TOWNHALL = r"""
 |_|I|_|
 """
 
+ASCII_WIZARD = r"""
+|>>
+uuu
+|[|
+|_|
+[_]
+"""
+
 ASCII_KING = r"""
 K
 """

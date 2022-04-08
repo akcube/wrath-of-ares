@@ -1,48 +1,30 @@
-'''
-Contains all the code relevant to cannon objects
-'''
+'''This file contains the code required for a Cannon Defense object'''
 
-from game_objects.barbarian import Barbarian
-from game_objects.game_object import GameObject
-from game_objects.graphics import ASCII_CANNON
+from game_objects.village_defense import VillageDefense
+from game_objects.troop import Troop
 from game_objects.king import King
-from utils.tools import get_graphic
 import numpy as np
 import utils.config as config
+from utils.tools import get_graphic
+from game_objects.graphics import ASCII_CANNON
+import sys
 
-class Cannon(GameObject):
+class Cannon(VillageDefense):
     '''
     This class contains all the data/functions needed to be implemented for
-    creating a cannon instance
+    creating a Cannon Defense object
     '''
 
-    def __init__(self, _pos, _targets):
-        super().__init__(pos=_pos, velocity=0, drawing=get_graphic(ASCII_CANNON),
-                         color=config.CANNON_COLOR, mhealth=30, dyncolor=True)
-        self.frame_delay = config.CANNON_FDELAY
-        self.cur_tick = 0
-        self.targets = _targets
-        self.range = 5
-        self.atk = 5
+    def __init__(self, mpos, village):
+        super().__init__(_pos=mpos, graphic=get_graphic(ASCII_CANNON), mcolor=config.CANNON_COLOR,
+                         health=config.CANNON_HEALTH, fdelay=config.CANNON_FDELAY, mrange=config.CANNON_RANGE,
+                         matk=config.CANNON_ATK, mvillage=village)
 
-    def manhattan(self, obj):
-        j, i = self.getPos()
-        oj, oi = obj.getPos()
-        return abs(oj-j) + abs(oi-i)
-    
-    def update(self):
-        self.cur_tick = (self.cur_tick+1)%self.frame_delay
-        closest = None
-        closestDist = 10000000
-        if self.cur_tick == 0 and not self._destroyed:
-            for t in self.targets:
-                if self.manhattan(t) < closestDist:
-                    closest = t
-                    closestDist = self.manhattan(t)
-        if closest is not None and closestDist <= self.range:
-            closest.damage(self.atk)
-        return super().update()
-    
-    def setTargets(self, _targets):
-        self.targets = _targets
+    def canAttack(self, obj):
+        return (isinstance(obj, Troop) and not obj._flying) or isinstance(obj, King)
+
+    def attack(self):
+        if(not self._destroyed and self.target != None):
+            self.target.damage(self.atk)
+
     
