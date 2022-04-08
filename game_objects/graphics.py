@@ -26,6 +26,14 @@ ASCII_BARBARIAN = r"""
 B
 """
 
+ASCII_ARCHER = r"""
+A
+"""
+
+ASCII_BALLOON = r"""
+O
+"""
+
 ASCII_WALL = r"""
 #
 """

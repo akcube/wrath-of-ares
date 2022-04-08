@@ -41,8 +41,8 @@ class WrathOfAres:
             self.player.sword_attack()
         elif key == 'q':
             self.player.aoe_attack()
-        elif key in ['1', '2', '3']:
-            self.village.spawnBarbarian(key)
+        elif int(key) in range(1, 10):
+            self.village.spawnTroop(key)
 
     def play(self):
         '''Begins the game.'''
