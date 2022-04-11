@@ -2,7 +2,6 @@
 This file contains all the code related to creating a village from a map
 """
 
-import atexit
 from game_objects.barbarian import Barbarian
 from game_objects.archer import Archer
 from game_objects.balloon import Balloon
@@ -40,47 +39,12 @@ class Village:
                     elif clear and box[i][j] == obj:
                         box[i][j] = None
 
-    def __init__(self, file):
-        charmap = np.loadtxt(file, dtype='str', comments=None)
-        
-        if(len(charmap) != config.REQ_HEIGHT):
-            raise ValueError('Bad charmap')
-        for line in charmap:
-            if(len(line) != config.REQ_WIDTH):
-                raise ValueError('Bad charmap')
-        
+    def __init__(self):
         self.renderlist = []
         self.hitbox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.skybox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.defeated = False
         self.spawnpoints = []
-        
-        for i in range(config.REQ_HEIGHT):
-            for j in range(config.REQ_WIDTH):
-                if charmap[i][j] == '#':
-                    W = Wall([j, i])
-                    self.renderlist.append(W)
-                    self.fill_hitbox(W)
-                elif charmap[i][j] == 'H':
-                    H = Hut([j, i])
-                    self.renderlist.append(H)
-                    self.fill_hitbox(H)
-                elif charmap[i][j] == 'T':
-                    T = TownHall([j, i])
-                    self.renderlist.append(T)
-                    self.fill_hitbox(T)
-                elif charmap[i][j] == 'C':
-                    C = Cannon([j,i], self)
-                    self.renderlist.append(C)
-                    self.fill_hitbox(C)
-                elif charmap[i][j] == 'W':
-                    W = WizardTower([j, i], self)
-                    self.renderlist.append(W)
-                    self.fill_hitbox(W)
-                elif charmap[i][j] == '1' or charmap[i][j] == '2' or charmap[i][j] == '3':
-                    S = Spawnpoint([j,i], charmap[i][j])
-                    self.renderlist.append(S)
-                    self.spawnpoints.append([j, i])
 
     def upd_player_pos(self, oldPos, player):
         oj, oi = oldPos

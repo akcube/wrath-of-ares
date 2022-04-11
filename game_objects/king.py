@@ -17,8 +17,8 @@ class King(GameObject):
     creating a functioning king object which is controlled by the user.
     '''
 
-    def __init__(self, village):
-        super().__init__(pos=np.array([1, 1]), velocity=config.KING_SPEED, drawing=get_graphic(ASCII_KING), 
+    def __init__(self, village, mdrawing=get_graphic(ASCII_KING), mcolor=config.KING_COLOR):
+        super().__init__(pos=np.array([1, 1]), velocity=config.KING_SPEED, drawing=mdrawing, 
                          color=config.KING_COLOR, mhealth=100)
         self.direction = 'L'
         self.atk = 5

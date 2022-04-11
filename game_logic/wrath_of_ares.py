@@ -1,3 +1,4 @@
+from game_logic.level_loader import LevelLoader
 from game_logic.village import Village
 from game_objects.barbarian import Barbarian
 from game_objects.game_object import GameObject
@@ -24,10 +25,10 @@ class WrathOfAres:
 
     def __init__(self):
         self.input = KBHit()
-        self.village = Village('maps/map1.txt')
-        self.player = King(self.village)
-        self.objects = [self.player, self.village]
-        self.screen = Screen(self.player)
+        self.village = None
+        self.player = None
+        self.objects = None
+        self.screen = None
 
     def process_input(self, key):
         if key == None:
@@ -45,8 +46,17 @@ class WrathOfAres:
         elif int(key) in range(1, 10):
             self.village.spawnTroop(key)
 
+    def load_game(self):
+        ll = LevelLoader()
+        p, v = ll.run()
+        self.village = v
+        self.player = p
+        self.objects = [p, v]
+        self.screen = Screen(p)
+
     def play(self):
         '''Begins the game.'''
+        self.load_game()
         while True:
 
             if self.village.isDefeated() or self.player.isDead():

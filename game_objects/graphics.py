@@ -30,6 +30,10 @@ ASCII_KING = r"""
 K
 """
 
+ASCII_QUEEN = r"""
+Q
+"""
+
 ASCII_BARBARIAN = r"""
 B
 """
