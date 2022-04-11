@@ -132,13 +132,13 @@ class Village:
                 mdefeated = False
         self.defeated = mdefeated
 
-        for i in range(config.REQ_HEIGHT):
-            for j in range(config.REQ_WIDTH):
-                if self.skybox[i][j] != None:
-                    print('1', end='', file=sys.stderr)
-                else:
-                    print('0', end='', file=sys.stderr)
-            print('\n', end='', file=sys.stderr)
+        # for i in range(config.REQ_HEIGHT):
+        #     for j in range(config.REQ_WIDTH):
+        #         if self.skybox[i][j] != None:
+        #             print('1', end='', file=sys.stderr)
+        #         else:
+        #             print('0', end='', file=sys.stderr)
+        #     print('\n', end='', file=sys.stderr)
 
     def aimlock(self):
         for obj in self.renderlist:

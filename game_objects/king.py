@@ -64,7 +64,7 @@ class King(GameObject):
         Makes a simple attack to the block he was last facing
         '''
         nxti, nxtj = self.getNext(self.direction)
-        if not self.village.isClear(nxti, nxtj): # There is a block to attack
+        if self.village.isVillageObjectAt(nxti, nxtj): # There is a block to attack
             self.village.hitbox[nxti][nxtj].damage(self.atk)
     
     def aoe_attack(self):
@@ -77,7 +77,7 @@ class King(GameObject):
             for jj in range(j-5, j+6):
                 if ii < 0 or jj < 0 or ii >= config.REQ_HEIGHT or jj >= config.REQ_WIDTH:
                     continue
-                if abs(ii - i) + abs(jj - j) <= self.aoe_radius and not self.village.isClear(ii, jj):
+                if abs(ii - i) + abs(jj - j) <= self.aoe_radius and self.village.isVillageObjectAt(ii, jj):
                     in_range.append(self.village.hitbox[ii][jj])
         in_range = list(set(in_range))
         for building in in_range:
