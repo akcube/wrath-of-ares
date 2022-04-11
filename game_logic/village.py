@@ -6,6 +6,7 @@ import atexit
 from game_objects.barbarian import Barbarian
 from game_objects.archer import Archer
 from game_objects.balloon import Balloon
+from game_objects.game_object import GameObject
 from game_objects.troop import Troop
 from game_objects.cannon import Cannon
 from game_objects.hut import Hut
@@ -81,9 +82,6 @@ class Village:
                     self.renderlist.append(S)
                     self.spawnpoints.append([j, i])
 
-    def isEnemy(self, obj):
-        return isinstance(obj, Troop) or isinstance(obj, King)
-
     def upd_player_pos(self, oldPos, player):
         oj, oi = oldPos
         nj, ni = player.getPos()
@@ -110,6 +108,11 @@ class Village:
         j = int(j)
         return (self.hitbox[i][j] == None)
     
+    def isSkyClear(self, i, j):
+        i = int(i)
+        j = int(j)
+        return (self.skybox[i][j] == None)
+    
     def render(self, screen):
         for obj in self.renderlist:
             obj.render(screen)
@@ -117,8 +120,8 @@ class Village:
     def update(self):
         mdefeated = True
         self.renderlist = [x for x in self.renderlist if not x.getDestroyed()]
-        self.bfs()
-        self.bfs(primary=False)
+        for i in range(1, 4):
+            self.bfs(i)
         self.aimlock()
         for obj in self.renderlist:
             self.fill_hitbox(obj, clear=True)
@@ -128,6 +131,14 @@ class Village:
             if not obj.getDestroyed() and not isinstance(obj, Troop) and not isinstance(obj, Spawnpoint):
                 mdefeated = False
         self.defeated = mdefeated
+
+        for i in range(config.REQ_HEIGHT):
+            for j in range(config.REQ_WIDTH):
+                if self.skybox[i][j] != None:
+                    print('1', end='', file=sys.stderr)
+                else:
+                    print('0', end='', file=sys.stderr)
+            print('\n', end='', file=sys.stderr)
 
     def aimlock(self):
         for obj in self.renderlist:
@@ -141,6 +152,12 @@ class Village:
                     best_dis, target = 100000000, None
                     for i in range(max(0, pi-r), min(config.REQ_HEIGHT, pi+r+1)):
                         for j in range(max(0, pj-r), min(config.REQ_WIDTH, pj+r+1)):
+                            if isinstance(obj, WizardTower) and not self.isSkyClear(i, j):
+                                enemy = self.skybox[i][j]
+                                mdis = pmanhattan((pj, pi), obj.getPos())
+                                if mdis < best_dis and obj.canAttack(enemy) and mdis <= obj.range:
+                                    best_dis = mdis
+                                    target = enemy
                             if self.isClear(i, j):
                                 continue
                             enemy = self.hitbox[i][j]
@@ -151,9 +168,8 @@ class Village:
                     if target != None:
                         obj.setTarget(target)
 
-    def bfs(self, primary=True):
+    def bfs(self, type=1):
         vis = [[False for i in range(config.REQ_WIDTH)] for j in range(config.REQ_HEIGHT)]
-        dis = [[1000000000 for i in range(config.REQ_WIDTH)] for j in range(config.REQ_HEIGHT)]
         par = [[(-1, -1) for i in range(config.REQ_WIDTH)] for j in range(config.REQ_HEIGHT)]
         target = [[None for i in range(config.REQ_WIDTH)] for j in range(config.REQ_HEIGHT)]
 
@@ -162,10 +178,9 @@ class Village:
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
                 obj = self.hitbox[i][j]
-                if not self.isClear(i, j) and not self.isEnemy(obj) and not isinstance(obj, (Wall, Spawnpoint)):
+                if (type in [1, 2] and self.isBuilding(obj)) or (type == 3 and self.isDefensiveBuilding(obj)):
                     q.append((i, j))
                     vis[i][j] = True
-                    dis[i][j] = 0
                     target[i][j] = obj
 
         dy = [-1, -1, -1, 0, 1, 1, 1, 0]
@@ -179,11 +194,10 @@ class Village:
                 nj = j+dx[k]
                 if(ni < 0 or nj < 0 or ni >= config.REQ_HEIGHT or nj >= config.REQ_WIDTH):
                     continue
-                if((primary and not self.isClear(ni, nj) and not isinstance(self.hitbox[ni][nj], Troop)) or vis[ni][nj]):
+                if vis[ni][nj] or (type == 1 and self.isVillageObject(self.hitbox[ni][nj])):
                     continue
                 vis[ni][nj] = True
                 q.append((ni, nj))
-                dis[ni][nj] = 1 + dis[i][j];
                 par[ni][nj] = (i, j)
                 target[ni][nj] = target[i][j];
 
@@ -192,14 +206,33 @@ class Village:
             if not isinstance(troop, Troop):
                 continue
             
-            # troop.setPrimaryMove(None)
             pj, pi = troop.getPos()
-            
-            if primary and par[pi][pj] != (-1, -1):
-                troop.setPrimaryMove((par[pi][pj], dis[pi][pj], target[pi][pj]))
-            if not primary and par[pi][pj] != (-1, -1):
-                troop.setSecondaryMove((par[pi][pj], dis[pi][pj], target[pi][pj]))
-
+            move = (par[pi][pj], target[pi][pj]) if par[pi][pj] != (-1, -1) else None
+            troop.setMoveChoice(type-1, move)
 
     def isDefeated(self):
         return self.defeated
+
+    def isEnemy(self, obj):
+        return isinstance(obj, (Troop, King)) 
+    
+    def isEnemyAt(self, i, j):
+        return self.isEnemy(self.hitbox[i][j])
+    
+    def isBuilding(self, obj):
+        return isinstance(obj, (GameObject)) and not isinstance(obj, (King, Troop, Spawnpoint, Wall))
+    
+    def isBuildingAt(self, i, j):
+        return self.isBuilding(self.hitbox[i][j])
+    
+    def isDefensiveBuilding(self, obj):
+        return isinstance(obj, (VillageDefense))
+    
+    def isDefensiveBuildingAt(self, i, j):
+        return self.isDefensiveBuilding(self.hitbox[i][j])
+    
+    def isVillageObject(self, obj):
+        return isinstance(obj, (GameObject)) and not isinstance(obj, (King, Troop, Spawnpoint))
+    
+    def isVillageObjectAt(self, i, j):
+        return self.isVillageObject(self.hitbox[i][j])

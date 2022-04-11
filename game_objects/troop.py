@@ -1,4 +1,4 @@
-'''This file contains the code required for the barbarian NPC'''
+'''This file contains the code required for the troop class'''
 
 from game_objects.game_object import GameObject
 import numpy as np
@@ -12,52 +12,59 @@ import sys
 class Troop(GameObject):
     '''
     This class contains all the data/functions needed to be implemented for
-    creating a Barbarian NPC
+    creating the troop class from which all troops are supposed to inherit
     '''
 
     def __init__(self, _pos, graphic, fdelay, atk, health, village, mrange, 
-                 flying, vel, mcolor, mfly=False):
+                 vel, mcolor, mfly=False):
         super().__init__(pos=_pos, velocity=vel, drawing=graphic,
                          color=mcolor, mhealth=health, dyncolor=True, canfly=mfly)
         self._framedelay = fdelay
         self._curframe = 0
         self._atk = atk
         self._lastmoved = uptime()
-        self._primaryMove = None
-        self._secondaryMove = None
+        self._moveChoices = [None, None, None]
         self._village = village
         self._range = mrange
         self._curtick = 0
     
-    def setPrimaryMove(self, move):
-        self._primaryMove = move
+    def setMoveChoice(self, choice, move):
+        self._moveChoices[choice] = move
 
-    def setSecondaryMove(self, move):
-        self._secondaryMove = move
-
+    ''' 
+    This function is expected to be overriden by any child class which inherits it.
+    Given that the village this object belongs to updates its move preferences,
+    accordingly pick the best move for that class and return it.
+    '''
     def pickBestMove(self):
-        if self._flying:
-            move = self._secondaryMove
-        else:
-            move = self._primaryMove if self._primaryMove != None else self._secondaryMove
-        return move
+        pass
+
+    ''' 
+    This function is expected to be overriden by any child class which inherits it.
+    Given that the village that this object belongs to updates its move preference,
+    perform an attack on the target if it is within range.
+    '''
+    def performAttack(self):
+        pass
 
     def update(self):
         self._curtick = (self._curtick + 1)%self._framedelay
-        move = self.pickBestMove()
-        if move == None:
-            return super().update()
+        move = None
+        try:
+            move = self.pickBestMove()
+        except:
+            move = None
 
-        cell, dis, tar = move
-        i, j = cell
         if (uptime() - self._lastmoved > 0.5 / self._velocity):
-            if self._village.isClear(i, j) or self._flying:
-                self.setPos((j, i))
-                self._lastmoved = uptime()
+            if move != None:
+                (i, j), tar = move
+                if (not self._flying and self._village.isClear(i, j)) or (self._flying and self._village.isSkyClear(i, j)):
+                    self.setPos((j, i))
+                    self._lastmoved = uptime()
 
         if self._curtick == 0:
-            if(manhattan(self, tar) <= self._range):
-                tar.damage(self._atk)
-            elif not self._village.isClear(i, j) and not isinstance(self._village.hitbox[i][j], Troop):
-                self._village.hitbox[i][j].damage(self._atk)
+            try:
+                self.performAttack()
+            except:
+                pass
         return super().update()    

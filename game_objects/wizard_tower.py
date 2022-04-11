@@ -29,7 +29,10 @@ class WizardTower(VillageDefense):
             rx, ry = config.WIZARD_XRANGE, config.WIZARD_YRANGE
             for i in range(max(0, pi-ry), min(pi+ry+1, config.REQ_HEIGHT)):
                 for j in range(max(0, pj-rx), min(pj+rx+1, config.REQ_WIDTH)):
-                    enemy = self.village.hitbox[i][j] if (i, j) != (pi, pj) else self.target
+                    enemy = self.village.hitbox[i][j]
+                    if self.canAttack(enemy):
+                        enemy.damage(self.atk)
+                    enemy = self.village.skybox[i][j]
                     if self.canAttack(enemy):
                         enemy.damage(self.atk)
 
