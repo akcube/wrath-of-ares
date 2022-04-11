@@ -31,9 +31,9 @@ class Archer(Troop):
     def performAttack(self):
         if self._moveChoices[1] == None:
             return 
-        (i, j), tar = self._moveChoices[0] if self._moveChoices[0] != None else self._moveChoices[1]
+        (_, __), tar = self._moveChoices[1]
+        (i, j), ___ = self._moveChoices[0] if self._moveChoices[0] != None else self._moveChoices[1]
         if manhattan(self, tar) <= self._range:
-            print("Damage done", file=sys.stderr)
             tar.damage(self._atk)
         elif self._village.isVillageObjectAt(i, j):
             self._village.hitbox[i][j].damage(self._atk)
