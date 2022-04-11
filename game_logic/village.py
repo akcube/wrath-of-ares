@@ -3,7 +3,6 @@ This file contains all the code related to creating a village from a map
 """
 
 import atexit
-from distutils.spawn import spawn
 from game_objects.barbarian import Barbarian
 from game_objects.archer import Archer
 from game_objects.balloon import Balloon
@@ -15,6 +14,7 @@ from game_objects.town_hall import TownHall
 from game_objects.wall import Wall
 from game_objects.village_defense import VillageDefense
 from game_objects.wizard_tower import WizardTower
+from game_objects.king import King
 from utils.tools import manhattan, pmanhattan
 import utils.config as config
 import numpy as np
@@ -33,10 +33,11 @@ class Village:
         for i in range(si, si+h):
             for j in range(sj, sj+w):
                 if i >= 0 and i < config.REQ_HEIGHT and j >= 0 and j < config.REQ_WIDTH:
+                    box = self.hitbox if not obj._flying else self.skybox
                     if not clear:
-                        self.hitbox[i][j] = obj
-                    elif clear and self.hitbox[i][j] == obj:
-                        self.hitbox[i][j] = None
+                        box[i][j] = obj
+                    elif clear and box[i][j] == obj:
+                        box[i][j] = None
 
     def __init__(self, file):
         charmap = np.loadtxt(file, dtype='str', comments=None)
@@ -49,9 +50,9 @@ class Village:
         
         self.renderlist = []
         self.hitbox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
+        self.skybox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.defeated = False
         self.spawnpoints = []
-        self.enemies = []
         
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
@@ -79,19 +80,30 @@ class Village:
                     S = Spawnpoint([j,i], charmap[i][j])
                     self.renderlist.append(S)
                     self.spawnpoints.append([j, i])
+
+    def isEnemy(self, obj):
+        return isinstance(obj, Troop) or isinstance(obj, King)
+
+    def upd_player_pos(self, oldPos, player):
+        oj, oi = oldPos
+        nj, ni = player.getPos()
+        self.hitbox[oi][oj] = None
+        self.hitbox[ni][nj] = player
         
     def spawnTroop(self, key):
         sid = int(key) - 1
+        j, i = self.spawnpoints[sid%3]
+        if not self.isClear(i, j):
+            return
+
         E = None
         if sid in [0, 1, 2]:
-            E = Barbarian(self.spawnpoints[sid], self)
+            E = Barbarian((j, i), self)
         elif sid in [3, 4, 5]:
-            E = Archer(self.spawnpoints[sid%3], self)
+            E = Archer((j, i), self)
         elif sid in [6, 7, 8]:
-            E = Balloon(self.spawnpoints[sid%3], self)
-        self.fill_hitbox(E)
+            E = Balloon((j, i), self)
         self.renderlist.append(E)
-        self.enemies.append(E)
 
     def isClear(self, i, j):
         i = int(i)
@@ -102,19 +114,18 @@ class Village:
         for obj in self.renderlist:
             obj.render(screen)
     
-    def addEnemy(self, enemy):
-        self.enemies.append(enemy)
-    
     def update(self):
         mdefeated = True
+        self.renderlist = [x for x in self.renderlist if not x.getDestroyed()]
         self.bfs()
         self.bfs(primary=False)
         self.aimlock()
         for obj in self.renderlist:
+            self.fill_hitbox(obj, clear=True)
             obj.update()
-            if obj.getDestroyed():
-                self.fill_hitbox(obj, clear=True)
-            elif not isinstance(obj, Troop) and not isinstance(obj, Spawnpoint):
+            if not obj.getDestroyed() and not isinstance(obj, Spawnpoint):
+                self.fill_hitbox(obj)
+            if not obj.getDestroyed() and not isinstance(obj, Troop) and not isinstance(obj, Spawnpoint):
                 mdefeated = False
         self.defeated = mdefeated
 
@@ -128,12 +139,11 @@ class Village:
                 if isinstance(obj, VillageDefense):
                     r = obj.getRange()
                     best_dis, target = 100000000, None
-                    consider_extra = tuple(self.enemies[0].getPos())
                     for i in range(max(0, pi-r), min(config.REQ_HEIGHT, pi+r+1)):
                         for j in range(max(0, pj-r), min(config.REQ_WIDTH, pj+r+1)):
-                            if self.isClear(i, j) and (j, i) != consider_extra:
+                            if self.isClear(i, j):
                                 continue
-                            enemy = self.hitbox[i][j] if not self.isClear(i, j) else self.enemies[0]
+                            enemy = self.hitbox[i][j]
                             mdis = pmanhattan((pj, pi), obj.getPos())
                             if mdis < best_dis and obj.canAttack(enemy) and mdis <= obj.range:
                                 best_dis = mdis
@@ -149,11 +159,10 @@ class Village:
 
         # Setup BFS
         q = deque([])
-        ct = 0
         for i in range(config.REQ_HEIGHT):
             for j in range(config.REQ_WIDTH):
                 obj = self.hitbox[i][j]
-                if not self.isClear(i, j) and not isinstance(obj, Troop) and not isinstance(obj, Wall) and not isinstance(obj, Spawnpoint):
+                if not self.isClear(i, j) and not self.isEnemy(obj) and not isinstance(obj, (Wall, Spawnpoint)):
                     q.append((i, j))
                     vis[i][j] = True
                     dis[i][j] = 0
@@ -170,29 +179,26 @@ class Village:
                 nj = j+dx[k]
                 if(ni < 0 or nj < 0 or ni >= config.REQ_HEIGHT or nj >= config.REQ_WIDTH):
                     continue
-                if(primary and isinstance(self.hitbox[ni][nj], Wall)):
+                if((primary and not self.isClear(ni, nj) and not isinstance(self.hitbox[ni][nj], Troop)) or vis[ni][nj]):
                     continue
-                elif not vis[ni][nj]:
-                    vis[ni][nj] = True
-                    q.append((ni, nj))
-                    dis[ni][nj] = 1 + dis[i][j];
-                    par[ni][nj] = (i, j)
-                    target[ni][nj] = target[i][j];
+                vis[ni][nj] = True
+                q.append((ni, nj))
+                dis[ni][nj] = 1 + dis[i][j];
+                par[ni][nj] = (i, j)
+                target[ni][nj] = target[i][j];
 
         # Set path for all troops
         for troop in self.renderlist:
             if not isinstance(troop, Troop):
                 continue
-
+            
+            # troop.setPrimaryMove(None)
             pj, pi = troop.getPos()
+            
             if primary and par[pi][pj] != (-1, -1):
                 troop.setPrimaryMove((par[pi][pj], dis[pi][pj], target[pi][pj]))
-            elif primary:
-                troop.setPrimaryMove(None)
             if not primary and par[pi][pj] != (-1, -1):
                 troop.setSecondaryMove((par[pi][pj], dis[pi][pj], target[pi][pj]))
-            elif not primary:
-                troop.setSecondaryMove(None)
 
 
     def isDefeated(self):

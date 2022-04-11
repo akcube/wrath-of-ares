@@ -16,5 +16,5 @@ class Balloon(Troop):
         super().__init__(_pos=mpos, graphic=get_graphic(ASCII_BALLOON), fdelay=config.BALLOON_FDELAY,
                          atk=config.BALLOON_ATK, health=config.BALLOON_HEALTH, village=mvillage, 
                          mrange=config.BALLOON_RANGE, flying=True, vel=config.BALLOON_SPEED, 
-                         mcolor=config.BALLOON_COLOR)
+                         mcolor=config.BALLOON_COLOR, mfly=True)
     

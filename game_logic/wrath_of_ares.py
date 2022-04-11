@@ -27,7 +27,6 @@ class WrathOfAres:
         self.village = Village('maps/map1.txt')
         self.player = King(self.village)
         self.objects = [self.player, self.village]
-        self.village.addEnemy(self.player)
         self.screen = Screen(self.player)
 
     def process_input(self, key):
@@ -36,7 +35,9 @@ class WrathOfAres:
         if(key == 'x'):
             sys.exit(0)
         elif key in ['w', 'a', 's', 'd']:
+            oldPos = self.player.getPos()
             self.player.move(key)
+            self.village.upd_player_pos(oldPos, self.player)
         elif key == ' ':
             self.player.sword_attack()
         elif key == 'q':

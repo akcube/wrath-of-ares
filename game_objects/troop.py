@@ -6,6 +6,7 @@ import utils.config as config
 from utils.tools import get_graphic
 from time import monotonic as uptime
 from game_objects.graphics import ASCII_BARBARIAN
+from utils.tools import manhattan
 import sys
 
 class Troop(GameObject):
@@ -15,16 +16,15 @@ class Troop(GameObject):
     '''
 
     def __init__(self, _pos, graphic, fdelay, atk, health, village, mrange, 
-                 flying, vel, mcolor):
+                 flying, vel, mcolor, mfly=False):
         super().__init__(pos=_pos, velocity=vel, drawing=graphic,
-                         color=mcolor, mhealth=health, dyncolor=True)
+                         color=mcolor, mhealth=health, dyncolor=True, canfly=mfly)
         self._framedelay = fdelay
         self._curframe = 0
         self._atk = atk
         self._lastmoved = uptime()
         self._primaryMove = None
         self._secondaryMove = None
-        self._flying = flying
         self._village = village
         self._range = mrange
         self._curtick = 0
@@ -50,14 +50,13 @@ class Troop(GameObject):
 
         cell, dis, tar = move
         i, j = cell
-        if not self._destroyed and (uptime() - self._lastmoved < 0.5 / self._velocity):
-            if dis >= self._range and (self._village.isClear(i, j) or self._flying):
+        if (uptime() - self._lastmoved > 0.5 / self._velocity):
+            if self._village.isClear(i, j) or self._flying:
                 self.setPos((j, i))
+                self._lastmoved = uptime()
 
-            self._lastmoved = uptime()
-
-        if self._curtick == 0 and not self._destroyed:
-            if(dis <= self._range):
+        if self._curtick == 0:
+            if(manhattan(self, tar) <= self._range):
                 tar.damage(self._atk)
             elif not self._village.isClear(i, j) and not isinstance(self._village.hitbox[i][j], Troop):
                 self._village.hitbox[i][j].damage(self._atk)

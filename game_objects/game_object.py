@@ -13,7 +13,7 @@ class GameObject:
     """
 
     def __init__(self, pos=np.array([0., 0.]), velocity=0., drawing=np.array([[" "]]), 
-                 color=" ", mhealth=0, dyncolor=False):
+                 color=" ", mhealth=0, dyncolor=False, canfly=False):
         """
         Constructor
 
@@ -36,6 +36,7 @@ class GameObject:
         self._health = mhealth
         self._destroyed = False
         self._dyncolor = dyncolor
+        self._flying = canfly
         self._renderDmgTick = False
 
     def damage(self, dmg):
