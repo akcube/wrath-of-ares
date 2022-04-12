@@ -86,3 +86,5 @@ class Screen:
         '''Resets cursor to (0, 0)'''
         print("\033[0;0H")
     
+    def setPlayer(self, player):
+        self.player = player

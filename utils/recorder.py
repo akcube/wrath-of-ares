@@ -14,6 +14,7 @@ class Recorder:
         id = 0
         for file in dirlist:
             id = max(id, int(file.name))
+        id += 1
         fname = self.rec_directory + str(id)
         return fname
 

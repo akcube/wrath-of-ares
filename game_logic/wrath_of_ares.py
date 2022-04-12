@@ -43,24 +43,42 @@ class WrathOfAres:
             self.player.sword_attack()
         elif key == 'q':
             self.player.aoe_attack()
-        elif int(key) in range(1, 10):
+        elif key.isdigit() and int(key) in range(1, 10):
             self.village.spawnTroop(key)
 
-    def load_game(self):
-        ll = LevelLoader()
-        p, v = ll.run()
+    def setPlayerVillage(self, p, v):
         self.village = v
         self.player = p
         self.objects = [p, v]
-        self.screen = Screen(p)
+        if self.screen == None:
+            self.screen = Screen(p)
+        else:
+            self.screen.setPlayer(p)
+
+    def load_game(self):
+        self.ll = LevelLoader()
+        p, v = self.ll.run()
+        self.setPlayerVillage(p, v)
 
     def play(self):
         '''Begins the game.'''
         self.load_game()
+        Endscreen = None
         while True:
 
-            if self.village.isDefeated() or self.player.isDead():
+            if self.player.isDead():
+                Endscreen = GameObject(pos=np.array([1, 1]), velocity=0, drawing=get_graphic(ASCII_LOSE),
+                         color=config.ASCII_LOSE_COLOR, mhealth=100)
                 break
+
+            if self.village.isDefeated():
+                nxt = self.ll.getNextLevel()
+                if(nxt == None):
+                    Endscreen = GameObject(pos=np.array([1, 1]), velocity=0, drawing=get_graphic(ASCII_WON),
+                         color=config.ASCII_WIN_COLOR, mhealth=100)
+                    break
+                p, v = nxt
+                self.setPlayerVillage(p, v)
 
             frame_begin = uptime()
 
@@ -78,12 +96,5 @@ class WrathOfAres:
 
         self.screen.clear()
         self.screen.setBackground(colorama.Back.BLACK)
-        Endscreen = None
-        if self.village.isDefeated():
-            Endscreen = GameObject(pos=np.array([1, 1]), velocity=0, drawing=get_graphic(ASCII_WON),
-                         color=config.ASCII_WIN_COLOR, mhealth=100)
-        elif self.player.isDead():
-            Endscreen = GameObject(pos=np.array([1, 1]), velocity=0, drawing=get_graphic(ASCII_LOSE),
-                         color=config.ASCII_LOSE_COLOR, mhealth=100)
         self.screen.add(Endscreen)
         self.screen.update()

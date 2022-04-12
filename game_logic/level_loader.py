@@ -33,7 +33,7 @@ class LevelLoader:
             self.player = self.player.upper()
             try:
                 print("What level would you like to play? [1, 2, 3]")
-                self.level = int(input("What level would you like to play? [1, 2, 3]"))
+                self.level = int(input())
             except:
                 self.level = -1
 
@@ -49,6 +49,14 @@ class LevelLoader:
     def createPlayer(self, village):
         player = King(village) if self.player == 'K' else Queen(village)
         return player
+
+    def getNextLevel(self):
+        if self.level >= 3:
+            return None
+        self.level += 1
+        village = self.generateVillage()
+        player = self.createPlayer(village)
+        return (player, village)
         
     def generateVillage(self):
         files = ['maps/map1.txt', 'maps/map2.txt', 'maps/map3.txt']

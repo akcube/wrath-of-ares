@@ -45,6 +45,9 @@ class Village:
         self.skybox = np.full((config.REQ_HEIGHT, config.REQ_WIDTH), None, dtype='object')
         self.defeated = False
         self.spawnpoints = []
+        self._balloons_left = 5
+        self._barbarians_left = 9
+        self._archers_left = 7
 
     def upd_player_pos(self, oldPos, player):
         oj, oi = oldPos
@@ -59,13 +62,17 @@ class Village:
             return
 
         E = None
-        if sid in [0, 1, 2]:
+        if sid in [0, 1, 2] and self._barbarians_left > 0:
             E = Barbarian((j, i), self)
-        elif sid in [3, 4, 5]:
+            self._barbarians_left -= 1
+        elif sid in [3, 4, 5] and self._archers_left > 0:
             E = Archer((j, i), self)
-        elif sid in [6, 7, 8]:
+            self._archers_left -= 1
+        elif sid in [6, 7, 8] and self._balloons_left > 0:
             E = Balloon((j, i), self)
-        self.renderlist.append(E)
+            self._balloons_left -= 1
+        if E != None: 
+            self.renderlist.append(E)
 
     def isClear(self, i, j):
         i = int(i)
@@ -92,7 +99,7 @@ class Village:
             obj.update()
             if not obj.getDestroyed() and not isinstance(obj, Spawnpoint):
                 self.fill_hitbox(obj)
-            if not obj.getDestroyed() and not isinstance(obj, Troop) and not isinstance(obj, Spawnpoint):
+            if not obj.getDestroyed() and self.isBuilding(obj):
                 mdefeated = False
         self.defeated = mdefeated
 
